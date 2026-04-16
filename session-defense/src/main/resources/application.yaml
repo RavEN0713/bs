@@ -1,0 +1,55 @@
+# ==========================================
+# 面向Web的会话劫持防护系统 - 核心配置文件
+# ==========================================
+
+server:
+  port: 8080 # 后端服务启动端口
+  servlet:
+    context-path: / # 根路径
+
+spring:
+  # ----------------------------------------
+  # 1. MySQL 数据库配置 (持久化用户信息与安全日志)
+  # ----------------------------------------
+  datasource:
+    # 指向我们在 Ubuntu 上创建的 web_sec_db 数据库
+    url: jdbc:mysql://172.16.97.115:3306/web_sec_db?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
+    # 替换为你刚才在 Ubuntu 上设置的 MySQL 密码
+    username: root
+    password: "root"
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # JPA 实体映射配置
+  jpa:
+    hibernate:
+      # update: 如果表不存在自动创建，如果实体类增加了字段自动更新表结构 
+      ddl-auto: update
+    show-sql: true # 在控制台打印执行的 SQL 语句，方便调试
+    properties:
+      hibernate:
+        format_sql: true # 格式化打印出的 SQL
+
+  # ----------------------------------------
+  # 2. Redis 缓存配置 (高速会话管理与防御校验核心)
+  # ----------------------------------------
+  data:
+    redis:
+      host: 172.16.97.115 # Ubuntu 本机 Redis 地址
+      port: 6379      # Redis 默认端口
+      username: default  # Redis 6+ ACL 默认用户名
+      password: root      # Redis 密码
+      database: 0     # 使用默认的 0 号数据库
+      lettuce:
+        pool:
+          max-active: 8   # 连接池最大连接数
+          max-wait: -1ms  # 最大阻塞等待时间(负数表示没限制)
+          max-idle: 8     # 连接池中的最大空闲连接
+          min-idle: 0     # 连接池中的最小空闲连接
+
+# ==========================================
+# 自定义安全系统业务参数
+# ==========================================
+security:
+  session:
+    expire-minutes: 30       # 会话默认过期时间 (分钟)
+    rotation-minutes: 15     # 强制 Token 轮换周期 (分钟)
